@@ -1,0 +1,17 @@
+---
+
+- name: AppDynamics | Cleanup | Remove old install 
+  file: path=/usr/local/{{item.target}} state=absent
+  with_items: app_dynamics_installers
+
+- name: AppDynamics | Install | Grab latest appdynamics tarballs and installers
+  get_url: url='{{app_dynamics_base_url}}{{item.file}}' dest='/tmp/{{item.file}}'
+  with_items: app_dynamics_installers
+
+- name: AppDynamics | Install | Unzip 
+  shell: 'unzip -qq /tmp/{{item.file}} -d /usr/local/{{item.target}}'
+  with_items: app_dynamics_installers
+
+- name: AppDynamics | Install | Give tomcat permissions
+  file: path=/usr/local/{{item.target}} owner={{tomcat_user.name}} group={{tomcat_user.name}} recurse=yes
+  with_items: app_dynamics_installers

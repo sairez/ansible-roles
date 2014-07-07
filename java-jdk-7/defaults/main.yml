@@ -1,0 +1,13 @@
+---
+
+java_home: /usr/java/
+java_base_url: 'http://blah.com/releases/java/'
+java_opts: "-Xms512m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=256m"
+
+####################################
+## JCE ##
+
+jce_policy_jars:
+  - {file: 'local_policy.jar'}
+  - {file: 'US_export_policy.jar'}
+jce_base_url: 'http://blah.com/releases/jce-policy/7/'

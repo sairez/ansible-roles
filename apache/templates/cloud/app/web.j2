@@ -1,0 +1,69 @@
+# {{ ansible_managed }}
+#
+
+ServerName {{ansible_hostname}}
+NameVirtualHost *
+Listen 80
+<VirtualHost *>
+	ServerAdmin blah@asdf.com
+
+	DocumentRoot /var/www/
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/>
+		Options FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error_log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access_log combined
+
+	ServerSignature On
+
+    # This directive overrides the behavior of TRACE for both the core server
+    # and mod_proxy. The default TraceEnable on permits TRACE requests per
+    # RFC 2616, which disallows any request body to accompany the request.
+    # TraceEnable off causes the core server and mod_proxy to return a 405
+    # (Method not allowed) error to the client.
+
+    TraceEnable off
+
+    # app: Redirect root to inbox
+    # No longer permanent such that it doesn't stick up in cache. We try not to be greedy and match only root.
+    RedirectMatch ^/$ /inbox
+
+    # app:
+    ProxyRequests Off
+
+    # The number of seconds before receives and sends time out.
+    # Note: Default in httpd.conf from CentOS5 to 6 dropped from 120 down to 60, this timeout was a bit short
+    #  in some high load tests so we decided to stick with the 120 we've always had.
+    Timeout 120
+
+    <Proxy *>
+        AddDefaultCharset off
+        Order deny,allow
+        Allow from all
+        Deny from all
+    </Proxy>
+
+    <Proxy balancer://wwwcluster>
+        BalancerMember ajp://127.0.0.1:8009 route=www1
+    </Proxy>
+
+    ProxyPass /inbox balancer://wwwcluster/inbox stickysession=JSESSIONID
+
+    # Enable/disable the handling of HTTP/1.1 "Via:" headers.
+    # ("Full" adds the server version; "Block" removes all outgoing Via: headers)
+    # Set to one of: Off | On | Full | Block
+    ProxyVia On
+</VirtualHost>

@@ -1,0 +1,15 @@
+---
+
+- name: ClamAV | Install | Install latest
+  apt: pkg='{{ item }}' state='present'
+  with_items:
+   - 'clamav-daemon'
+
+- name: ClamAV | Install | Run setup
+  shell: '/usr/bin/freshclam'
+
+- name: ClamAV | Install | Overlay Configuration
+  template: src='clamav-debian.j2' dest='/etc/clamav/clamd.conf' owner='clamav' group='clamav' mode='0644'
+
+- name: ClamAV | Install | Startup and enable
+  service: name='clamav-daemon' state='started' enabled='true'

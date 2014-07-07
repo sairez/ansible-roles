@@ -1,0 +1,43 @@
+---
+
+- name: JDK | Cleanup installers
+  file: path='/tmp/{{java_installer.file}}' state='absent'
+  tags: clean
+
+- name: JDK | Cleanup installer targets
+  file: path='/tmp/{{java_installer.target}}' state='absent'
+  tags: clean
+
+- name: JDK | Install | Grab latest JDK
+  get_url: url={{java_base_url}}{{java_installer.file}} dest=/tmp/{{java_installer.file}}
+  tags: jdk
+
+- name: JDK | Install | Create JAVA java_home
+  file: path={{java_home}} state=directory
+  
+- name: JDK | Install | Clean up and old install of same version
+  file: path={{java_home}}{{java_installer.target}} state=absent
+
+- name: JDK | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{java_installer.file}} -C {{java_home}} creates={{java_home}}{{java_installer.target}}'
+
+- name: JDK | Install | Link current JDK to latest
+  file: src={{java_home}}{{java_installer.target}} path={{java_home}}latest state=link
+  tags: jdk
+
+- name: JDK | Install | Link default JDK to latest
+  file: src={{java_home}}latest path={{java_home}}default state=link
+  tags: jdk
+
+- name: JDK | Install | Link java to /usr/bin
+  file: src={{java_home}}latest/bin/java path=/usr/bin/java state=link
+  tags: jdk
+
+- name: JDK | JCE Unlimited Encryption Strength | Remove old policy jars
+  file: path='{{java_home}}latest/jre/lib/security/{{item.file}}' state=absent
+  with_items: jce_policy_jars
+
+- name: JDK | JCE Unlimited Encryption Strength | Copy policy jars
+  get_url: url='{{jce_base_url}}{{item.file}}' dest='{{java_home}}latest/jre/lib/security/{{item.file}}'
+  with_items: jce_policy_jars
+  tags: jce

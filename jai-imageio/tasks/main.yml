@@ -1,0 +1,15 @@
+---
+
+- name: JDK | JAI imageio | Copy JAI imageio jars
+  get_url: url='{{jai_imageio_base_url}}{{item.file}}' dest='{{java_home}}latest/jre/lib/ext/{{item.file}}'
+  with_items: jai_imageio_jars
+
+- name: JDK | JAI imageio | Copy JAI imageio libraries (i386)
+  get_url: url='{{jai_imageio_base_url}}{{item.sub_url}}{{item.file}}' dest='{{java_home}}latest/jre/lib/i386/{{item.file}}'
+  when: "'{{ansible_machine}}' == 'i686'"
+  with_items: jai_imageio_libs.i686
+
+- name: JDK | JAI imageio | Copy JAI imageio libraries (x86_64)
+  get_url: url='{{jai_imageio_base_url}}{{item.sub_url}}{{item.file}}' dest='{{java_home}}latest/jre/lib/amd64/{{item.file}}'
+  when: "'{{ansible_machine}}' == 'x86_64'"
+  with_items: jai_imageio_libs.x86_64

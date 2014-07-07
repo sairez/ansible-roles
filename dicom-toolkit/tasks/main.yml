@@ -1,0 +1,16 @@
+---
+
+- name: Support Tools | Install | Grab latest dcmtk DICOM toolkit tarball
+  get_url: url='{{dicom_toolkit_base_url}}{{dicom_toolkit_installer.file}}' dest='/tmp/{{dicom_toolkit_installer.file}}'
+
+- name: Support Tools | Install | Extract DICOM toolkit tarball archive
+  shell: 'tar -xjf /tmp/{{dicom_toolkit_installer.file}} -C /usr/local creates=/usr/local/{{dicom_toolkit_installer.target}}'
+
+- name: Support Tools | Install | Give root ownership of DICOM toolkit 
+  file: path='/usr/local/{{dicom_toolkit_installer.target}}' owner='{{tomcat_user.name}}' group='{{tomcat_user.group}}'
+
+- name: Support Tools | Install | Symlink install directory of DICOM toolkit 
+  file: src='/usr/local/{{dicom_toolkit_installer.target}}' path='{{dicom_toolkit_home}}' state='link'
+
+- name: Support Tools | Install | Cleanup installers
+  file: path='/tmp/{{dicom_toolkit_installer.file}}' state='absent'

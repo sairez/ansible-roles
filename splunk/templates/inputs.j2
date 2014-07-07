@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+#
+[default]
+host = {{ansible_hostname}}
+
+[monitor:///var/log]
+whitelist=(\.log|log$|messages|secure|auth|mesg$|cron$|acpid$|\.out)
+blacklist=(.gz|httpd|lastlog|anaconda\.syslog)
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+disabled = 0
+ignoreOlderThan = 30d
+
+[monitor:///etc]
+_whitelist=(\.conf|\.cfg|config$|\.ini|\.init|\.cf|\.cnf|shrc$|^ifcfg|\.profile|\.rc|\.rules|\.tab|tab$|\.login|policy$)
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+disabled = 0
+ignoreOlderThan = 30d
+
+{% if app_flavor=='app' %}
+[monitor:///usr/local/tomcat/logs/catalina.out]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=catalina
+disabled = 0
+
+[monitor:///usr/local/tomcat/logs/web.log]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=catalina
+disabled = 0
+ignoreOlderThan = 30d
+
+[monitor:///var/lib/postgresql/9.1/main/pg_log/*.log]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=postgresql
+disabled = 0
+ignoreOlderThan = 30d
+{% endif %}
+
+{% if app_flavor=='proxy' %}
+[monitor:///var/log/httpd/*access*]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=access_combined
+blacklist = .gz
+ignoreOlderThan = 30d
+
+[monitor:///var/log/httpd/*error*]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=apache_error
+blacklist = .gz
+ignoreOlderThan = 30d
+
+[monitor:///var/log/httpd/modsecurity/audit*]
+index={{lifecycle}}_{{build_flavor}}_{{app_flavor}}
+sourcetype=modsec_audit
+blacklist = .gz
+ignoreOlderThan = 30d
+{% endif %}

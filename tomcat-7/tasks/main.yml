@@ -1,0 +1,98 @@
+---
+
+- name: Apache Tomcat | Configure | Disable service
+  service: name='{{tomcat_service}}' state='stopped'
+  ignore_errors: yes
+
+- name: Apache Tomcat | Cleanup installers
+  file: path='/tmp/{{tomcat_installer.file}}' state='absent'
+
+- name: Apache Tomcat | Cleanup installer target
+  file: path='/usr/local/{{tomcat_installer.target}}' state='absent'
+  tags: install
+
+- name: Apache Tomcat | Create tomcat user
+  user: name='{{tomcat_user.name}}' comment='tomcat' createhome='yes' state='present'
+
+- name: Apache Tomcat | Add admin users to tomcat group
+  user: name={{item.name}} groups={{tomcat_user.group}} append=true
+  with_items: admins
+  when: build_flavor == 'cloud'
+
+- name: sysctl | Configure | add hugetables group
+  group: name='{{tomcat_hugetables_group}}' state=present
+  when: "tomcat_hugetables=='true'"
+
+- name: sysctl | Configure | Set tgid
+  shell: "grep {{tomcat_hugetables_group}} /etc/group | awk -F: '{print $3}'"
+  register: tgid
+  when: "tomcat_hugetables=='true'"
+
+- name: Apache Tomcat | Add tomcat user to hugetables group
+  user: name='{{tomcat_user.name}}' groups='{{tomcat_user.group}},{{tomcat_hugetables_group}}'
+  when: "tomcat_hugetables=='true'"
+
+- name: Apache Tomcat | Set kernel memory requirements for hugetables
+  template: src='{{build_flavor}}/{{app_flavor}}/40-tomcat-hugetables.j2' dest='/etc/sysctl.d/40-tomcat-hugetables.conf' owner='root' group='root' mode='0644'
+  when: "tomcat_hugetables=='true'"
+
+- name: System | Configure | Load sysctl.d
+  shell: sysctl --system
+
+- name: Apache Tomcat | Install | Grab latest tomcat tarball
+  get_url: url='{{tomcat_base_url}}{{tomcat_installer.file}}' dest='/tmp/{{tomcat_installer.file}}'
+  tags: install
+
+- name: Apache Tomcat | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{tomcat_installer.file}} -C /usr/local creates=/usr/local/{{tomcat_installer.target}}'
+  tags: install
+
+- name: Apache Tomcat | Install | Give ownership of install to tomcat user
+  file: path=/usr/local/{{tomcat_installer.target}}/ state=directory owner={{tomcat_user.name}} group={{tomcat_user.group}} recurse=yes
+
+- name: Apache Tomcat | Install | Symlink install directory
+  file: src='/usr/local/{{tomcat_installer.target}}' path='/usr/local/tomcat' state='link'
+  tags: install
+
+- name: Apache Tomcat | Install | Grab JMX jar
+  get_url: url='{{tomcat_base_url}}{{tomcat_jmx_jar.file}}' dest='{{tomcat_home}}lib/{{tomcat_jmx_jar.file}}'
+  when: "tomcat_jmx=='true'"
+  tags: install
+
+- name: Apache Tomcat | Add JMX authentication
+  copy: content='{{tomcat_jmx_username}} {{tomcat_jmx_password}}' dest='{{tomcat_home}}conf/jmxremote.password' owner='{{tomcat_user.name}}' group='{{tomcat_user.group}}' mode='0644'
+  when: "tomcat_jmx=='true'"
+
+- name: Apache Tomcat | Add JMX access
+  copy: content='{{tomcat_jmx_username}} readwrite' dest='{{tomcat_home}}conf/jmxremote.access' owner='{{tomcat_user.name}}' group='{{tomcat_user.group}}' mode='0600'
+  when: "tomcat_jmx=='true'"
+
+- name: Apache Tomcat | Configure | Backup server config
+  shell: 'cp -v {{tomcat_home}}conf/server.xml {{tomcat_home}}conf/server.xml.bu.{{ansible_date_time.date}}'
+  tags: tomcat_config
+
+- name: Apache Tomcat | Configure | Overlay configuration
+  template: src='{{build_flavor}}/{{app_flavor}}/{{item.file}}' dest='{{item.target}}' owner={{tomcat_user.name}} group={{tomcat_user.group}}
+  with_items: tomcat_config_files
+  tags: tomcat_config
+
+- name: Apache Tomcat | Install | Make shell scripts executable
+  shell: 'ls -1 {{tomcat_home}}bin/*.sh'
+  register: dumpfiles
+- file: path='{{item}}' mode='0755'
+  with_items: dumpfiles.stdout_lines
+
+- name: Apache Tomcat | Install | Trim out default webapps
+  file: path='{{tomcat_home}}webapps/{{item}}' state='absent'
+  with_items: tomcat_default_webapps
+
+- name: Apache Tomcat | Configure | Startup Script
+  file: path='/etc/init.d/{{tomcat_service}}' state='file' owner={{tomcat_user.name}} group={{tomcat_user.group}} mode='0755'
+
+- name: Apache Tomcat | Configure | Enable startup on boot
+  service: name='{{tomcat_service}}' state='restarted' enabled='yes'
+  when: "build_flavor != 'cloud'"
+
+- name: Apache Tomcat | Configure | Disable startup on boot for cloud
+  service: name='{{tomcat_service}}' state='stopped' enabled='no'
+  when: "build_flavor == 'cloud'"

@@ -1,0 +1,7 @@
+---
+
+jenkins_key: 'http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key'
+jenkins_repo: 'http://pkg.jenkins-ci.org/debian/'
+jenkins_home: '/var/lib/jenkins/'
+jenkins_user: 'svc_jenkins'
+jenkins_group: 'buildsudoers'

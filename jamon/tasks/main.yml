@@ -1,0 +1,25 @@
+---
+
+- name: JAMon | Cleanup installers
+  file: path='/tmp/{{jamon_installer.file}}' state='absent'
+  tags: clean
+
+- name: JAMon | Cleanup installer targets
+  file: path='/tmp/{{jamon_installer.target}}' state='absent'
+  tags: clean
+
+- name: JAMon | Grab latest jamon from sourceforge
+  get_url: url='{{jamon_base_url}}{{jamon_installer.file}}' dest='/tmp/{{jamon_installer.file}}'
+  tags: jamon
+
+- name: JAMon | Extract archive
+  shell: unzip /tmp/{{jamon_installer.file}} -d /tmp/{{jamon_installer.target.0}} creates=/tmp/{{jamon_installer.target.0}}/binaries/{{jamon_installer.target.1}}
+  tags: jamon
+
+- name: JAMon | Move jar into place
+  shell: cp -v /tmp/{{jamon_installer.target.0}}/binaries/{{jamon_installer.target.1}} {{tomcat_home}}/lib/{{jamon_installer.target.1}}
+  tags: jamon
+
+- name: JAMon | Give tomcat permissions
+  file: path={{tomcat_home}}/lib/{{jamon_installer.target.1}} owner={{tomcat_user.name}} group={{tomcat_user.name}}
+  tags: jamon

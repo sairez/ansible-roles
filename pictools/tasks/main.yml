@@ -1,0 +1,23 @@
+---
+
+- name: Pictools | Install | Cleanup any old same version
+  file: path=/usr/local/{{pictools_installer.target}} state='absent'
+
+- name: Pictools | Install | Grab latest pictools tarball
+  get_url: url='{{pictools_base_url}}{{pictools_installer.file}}' dest='/tmp/{{pictools_installer.file}}' mode=0755
+
+# - name: Pictools | Install | Grab latest pictools tarball
+#   copy: src='{{item.file}}' dest='/tmp/{{item.file}}' mode=0755
+#   with_items: pictools_installer
+
+- name: Pictools | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{pictools_installer.file}} -C /usr/local creates=/usr/local/{{pictools_installer.target}}'
+
+- name: Pictools | Install | Set permissions for tomcat
+  file: path=/usr/local/{{pictools_installer.target}} owner='{{tomcat_user.name}}' group='{{tomcat_user.group}}' mode='0755' recurse='yes' 
+
+- name: Pictools | Install | Symlink install directory
+  file: src='/usr/local/{{pictools_installer.target}}' path='{{pictools_home}}' state='link'
+
+- name: Pictools | Install | Cleanup installers
+  file: path='/tmp/{{pictools_installer.file}}' state='absent'

@@ -1,0 +1,44 @@
+---
+
+- name: git | Install | Install packages needed to connect git
+  apt: name={{item}} state='present'
+  with_items:
+    - libssl-dev
+    - make
+    - git
+    - g++
+
+- name: ssh | Configure | Add github.com to known_hosts
+  shell: ssh-keyscan -H github.com >> /home/{{item.name}}/.ssh/known_hosts
+  with_items: admins
+
+- name: git-crypt | Install | Grab latest version of git-crypt
+  git: repo={{git.git_crypt.base_url}}{{item.sub_url}}{{item.file}} dest=/tmp/{{item.target}} update=yes
+  with_items: git.git_crypt.files
+
+- name: git-crypt | Install | Build git-crypt binary
+  shell: make chdir=/tmp/{{item.target}}
+  with_items: git.git_crypt.files
+
+- name: git-crypt | Install | Move git-crypt binary in place
+  shell: mv /tmp/{{item.target}}/git-crypt /usr/local/bin/
+  with_items: git.git_crypt.files
+
+- name: git | Configure | Configure user information for git
+  shell: git config --global {{item}}
+  with_items:
+    - "user.name '{{git.github.user_name}}'"
+    - "user.name '{{git.github.email}}'"
+
+- name: git | Clean up | remove uneeded packages
+  apt: name={{item}} state='absent' state=absent force=yes purge=yes
+  with_items:
+    - libssl-dev
+    - make
+    - g++
+
+- name: cleanup | Apt Cleanup
+  shell: apt-get -y {{item}}
+  with_items:
+    - autoremove
+    - clean

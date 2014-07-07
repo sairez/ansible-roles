@@ -1,0 +1,11 @@
+---
+
+jai_imageio_base_url: 'http://blah.com/releases/jai-imageio/'
+jai_imageio_jars:
+  - {file: 'jai_imageio.jar'}
+  - {file: 'clibwrapper_jiio.jar'}
+jai_imageio_libs:
+  x86_64:
+    - {sub_url: 'amd64/', file: 'libclib_jiio.so'}
+  i686:
+    - {sub_url: 'i386/', file: 'libclib_jiio.so'}

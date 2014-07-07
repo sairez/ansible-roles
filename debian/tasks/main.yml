@@ -1,0 +1,94 @@
+---
+
+- name: System | Configure | Change shell from dash to bash
+  file: src='/bin/bash' path='/bin/sh' state=link
+
+- name: System | Configure | Install debconf-utils
+  apt: pkg='debconf-utils' state='latest'
+
+- name: System | Configure | Set default locale to en_US.UTF-8
+  shell: 'debconf-set-selections <<< "locales locales/default_environment_locale string en_US.UTF-8"'
+  #debconf: name=locales question='locales/default_environment_locale' vtype='string' value=en_US.UTF-8
+
+- name: System | Configure | Set to generate locales
+  shell: 'debconf-set-selections <<< "locales locales/locales_to_be_generated string en_US.UTF-8 UTF-8"'
+  #debconf: name=locales question='locales/locales_to_be_generated' vtype='string' value='en_US.UTF-8 UTF-8'
+
+- name: System | Configure | Disable ipv6
+  lineinfile: regexp='^GRUB_CMDLINE_LINUX=' line='GRUB_CMDLINE_LINUX="debian-installer=en_US ipv6.disable=1"' state='present' dest='/etc/default/grub'
+
+- name: System | Configure | Update grub
+  shell: 'update-grub'
+
+- name: System | Configure| Get OS release
+  shell: 'uname -r'
+  register: os_release
+
+- name: Apt | Upgrade | Upgrade aptitude
+  apt: upgrade='full' update_cache='yes'
+
+- name: System | Install | Install requirements
+  apt: pkg={{item}} state='present' install_recommends='yes'
+  with_items:
+    - curl
+    - wget
+    - gcc
+    - make
+    - linux-headers-{{os_release.stdout_lines.0}}
+    - build-essential
+    - perl
+    - ntp
+    - cron
+    - zip
+    - unzip
+    - dialog
+    - cifs-utils
+    - nfs-common
+
+- name: OpenSSL | Apt | Prevent restart services dialog
+# debconf: name='libssl1.0.0' question='libssl1.0.0/restart-services' vtype='string' value='ntp'
+  shell: 'debconf-set-selections <<< "libssl1.0.0 libssl1.0.0/restart-services string ntp"'
+
+- name: OpenSSL | Apt | Prevent restart services dialog
+# debconf: name='libssl1.0.0:amd64' question='libssl1.0.0/restart-services' vtype='string' value='ntp'
+  shell: 'debconf-set-selections <<< "libssl1.0.0:amd64 libssl1.0.0/restart-services string ntp"'
+
+- name: OpenSSL | Apt | Upgrade Openssl
+  apt: pkg='{{item}}' state='latest' update_cache='yes' install_recommends='yes' force='yes'
+  with_items:
+    - 'openssl'
+    - 'libssl1.0.0'
+    - 'libmagic1'
+    - 'openssh-client'
+    - 'openssh-server'
+    - 'python2.7'
+    - 'python2.7-minimal'
+
+- name: System | Configure | Set timezone to EST
+  file: path='/etc/timezone' state='absent'
+- copy: content='America/New_York' dest='/etc/timezone' force=yes
+- shell: dpkg-reconfigure -f noninteractive tzdata
+
+- name: System | Configure | add 2 second delay to interface up to make the dhclient happy
+  shell: echo "pre-up sleep 2" >> /etc/network/interfaces
+
+- name: System | Configure | Place /etc/dhcp/dhclient.conf for dynamic DNS
+  copy: content='send host-name = gethostname();' dest='/etc/dhcp/dhclient.conf' force=yes
+
+- name: System | Configure | bind ntp only to local interface
+  template: src='ntp.j2' dest='/etc/ntp.conf' owner='root' group='root' mode='0644'
+
+- name: System | Configure | restart ntp
+  service: name='ntp' state='restarted' enabled='yes'
+
+- name: System | Configure | increase max number of openfiles
+  template: src='limits.j2' dest='/etc/security/limits.conf' owner='root' group='root' mode='0644'
+
+- name: System | Configure | Set sysctl max receive/send network buffers
+  template: src='sysctl.j2' dest='/etc/sysctl.d/20-sysctl.conf' owner='root' group='root'
+
+- name: System | Configure | Load sysctl.conf
+  shell: sysctl -p
+
+- name: System | Configure | Load sysctl.d on boot
+  service: name=procps state=started enabled=yes

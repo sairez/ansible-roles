@@ -1,0 +1,5 @@
+---
+
+vmware_tools_base_url: 'http://blah.com/releases/vmware/'
+vmware_tools_installer: {file: 'vmware-tools-linux.iso', target: ['VMwareTools-9.0.1-913578.tar.gz','vmware-tools-distrib']}
+vmware_tools_mount_point: '/mnt/vmwaretools'

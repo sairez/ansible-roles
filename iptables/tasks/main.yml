@@ -1,0 +1,10 @@
+---
+
+- name: Firewall (iptables) | Setup | Overlay configuration
+  template: src='{{build_flavor}}/{{app_flavor}}/iptables.j2' dest='/etc/iptables.up.rules' owner='root' group='root' mode='0600'
+
+- name: Firewall (iptables) | Setup | Overlay configuration
+  shell: 'iptables-restore < /etc/iptables.up.rules'
+
+- name: Firewall (iptables) | Setup | Place firewall rules startup
+  template: src='iptables-debian-up.j2' dest='/etc/network/if-pre-up.d/iptables' owner='root' group='root' mode='0755'

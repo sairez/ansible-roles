@@ -1,0 +1,10 @@
+---
+
+splunk_user: {name: 'splunk', group: 'splunk'}
+splunk_admin_password: 'MahBucket1!'
+splunk_home: '/opt/splunkforwarder'
+splunk_base_url: 'http://blah.com/releases/splunk/'
+splunk_installer: {file: 'splunkforwarder-6.0.1-189883-linux-2.6-amd64.deb', target: ''}
+splunk_nix_collector: {file: 'CentrifyInsightNIXCollector-1.4.0.tar.gz', target: 'CentrifyInsightNIXCollector'}
+splunk_server: 'splunk.blah.com'
+splunk_port: '9997'

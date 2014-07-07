@@ -1,0 +1,14 @@
+---
+
+####################################
+## PICTOOLS ##
+
+pictools_home: /usr/local/pictools
+
+pictools_base_url: 'http://blah.com/releases/misc/'
+
+pictools_installer:
+  file: 'pictools-2.00.644.tar.gz'
+  target: 'pictools-2.00.644'
+
+pictools_java_opts: "-Dorg.dcm4che2.imageio.ImageReaderFactory=file://{{pictools_home}}/ImageReaderFactory.properties"

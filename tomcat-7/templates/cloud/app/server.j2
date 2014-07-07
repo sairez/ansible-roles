@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="8005" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JasperListener" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+{% if tomcat_jmx=='true' %}
+  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
+            rmiBindAddress="localhost"
+            rmiRegistryPortPlatform="{{tomcat_jmx_rmi_reg_port}}"
+            rmiServerPortPlatform="{{tomcat_jmx_rmi_server_port}}"/>
+{% endif %}
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+  <Service name="Catalina">
+    <Executor name="tomcatThreadPool" 
+              namePrefix="catalina-http-"
+              maxThreads="300" 
+              minSpareThreads="50"/>
+    <Connector acceptCount="50"
+               connectionTimeout="20000"
+               keepAliveTimeout="0"
+               executor="tomcatThreadPool"
+               maxKeepAliveRequests="25"
+               maxParameterCount="{{tomcat_max_parameter_count}}" 
+               maxPostSize="{{tomcat_max_post_size}}"
+               port="{{tomcat_ajp_port}}" 
+               protocol="org.apache.coyote.ajp.AjpAprProtocol" 
+               redirectPort="8443" />
+    <Connector acceptCount="5"
+               connectionTimeout="20000"
+               keepAliveTimeout="0"
+               executor="tomcatThreadPool"
+               maxKeepAliveRequests="5"
+               maxParameterCount="{{tomcat_max_parameter_count}}" 
+               maxPostSize="{{tomcat_max_post_size}}"
+               port="{{tomcat_http_port}}" 
+               protocol="org.apache.coyote.http11.Http11Protocol" 
+               redirectPort="8443" />
+    <Engine name="Catalina" 
+            defaultHost="localhost" 
+            jvmRoute="{{ansible_hostname}}">
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+      <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true"
+            deployOnStartup="true" deployXML="true">
+
+        <Valve className="org.apache.catalina.valves.AccessLogValve" 
+               directory="logs"
+               prefix="localhost_access_log" 
+               suffix=".txt"
+               pattern="%h  %l  %u  %t  '%r'  '%{Referer}i'  '%{User-Agent}i'  %S  %s  %b  %D" />
+      </Host>
+    </Engine>
+  </Service>
+</Server>

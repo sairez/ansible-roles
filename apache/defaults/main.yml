@@ -1,0 +1,19 @@
+---
+
+apache_home: '/etc/apache2'
+apache_service: 'apache2'
+
+apache_modules:
+    - ssl 
+    - proxy 
+    - proxy_balancer 
+    - proxy_ajp 
+    - proxy_http 
+    - proxy_html 
+    - rewrite
+
+apache_requirements:
+  - apache2
+  - libxml2-dev
+  - libapache2-mod-proxy-html
+  - apache2-mpm-prefork

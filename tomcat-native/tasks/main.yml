@@ -1,0 +1,7 @@
+---
+
+- name: Apache Tomcat | Install | Grab APR native library
+  get_url: url='{{tomcat_base_url}}{{tomcat_native_installer.file}}' dest='/tmp/{{tomcat_native_installer.file}}'
+
+- name: Apache Tomcat | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{tomcat_native_installer.file}} -C /usr/local creates=/usr/local/{{tomcat_native_installer.target}}'

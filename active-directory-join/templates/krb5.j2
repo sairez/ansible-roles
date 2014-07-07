@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+#
+[logging]
+ default = FILE:/var/log/krb5libs.log
+ kdc = FILE:/var/log/krb5kdc.log
+ admin_server = FILE:/var/log/kadmind.log
+
+[libdefaults]
+ default_realm = {% filter upper %}{{ad_domain}}{% endfilter %}
+
+ dns_lookup_realm = false
+ dns_lookup_kdc = true
+ ticket_lifetime = 24h
+ renew_lifetime = 7d
+ forwardable = true
+
+[realms]
+ {% filter upper %}{{ad_domain}}{% endfilter %} = {
+  admin_server = {{ad_primary_dc}}
+  admin_server = {{ad_secondary_dc}}
+ }
+
+[domain_realm]
+ {{ad_domain}} = {% filter upper %}{{ad_domain}}{% endfilter %}
+
+ .{{ad_domain}} = {% filter upper %}{{ad_domain}}{% endfilter %}

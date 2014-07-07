@@ -1,0 +1,5 @@
+---
+
+dicom_toolkit_base_url: 'http://blah.com/releases/dcmtk/'
+dicom_toolkit_installer: {file: 'dcmtk-3.6.0-linux-i686-static.tar.bz2', target: 'dcmtk-3.6.0-linux-i686-static'}
+dicom_toolkit_home: /usr/local/dcmtk

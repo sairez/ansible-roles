@@ -1,0 +1,13 @@
+---
+
+- name: User | sudo Configure | Don't always set home and Preserve env home
+  template: src='sudoers-debian.j2' dest='/tmp/sudoers' owner='root' group='root' mode='0600' validate='visudo -cf %s'
+  tags: 'users'
+
+- name: User | sudo Configure | Place new config
+  shell: '\cp -vf /tmp/sudoers /etc/sudoers'
+  tags: 'users'
+
+- name: User | sudo Configure | Clean up temporary files
+  file: path='/tmp/sudoers' state='absent'
+  tags: 'users'

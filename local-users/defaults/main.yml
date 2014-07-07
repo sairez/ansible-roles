@@ -1,0 +1,12 @@
+---
+
+permit_root_login: 'no'
+
+rc:
+  base_dir: 'rc/'
+  files:
+    - {sub_dir: '', file: 'bashrc', target: 'bashrc'}
+    - {sub_dir: '', file: 'lscolorsrc', target: 'lscolorsrc'}
+    - {sub_dir: '', file: 'screenrc', target: 'screenrc'}
+    - {sub_dir: '', file: 'vimrc', target: 'vimrc'}
+    - {sub_dir: '', file: 'bash_history', target: 'bash_history'}

@@ -1,0 +1,30 @@
+---
+- name: Jenkins | Install | Add jenkins apt-key
+  apt_key: url={{jenkins_key}} state=present
+
+- name: Jenkins | Install | Add jenkins APT repository
+  apt_repository: repo='deb {{jenkins_repo}} binary/' state=present
+
+- name: Jenkins | Install | Remove non-existing src apt repository
+  apt_repository: repo='deb-src {{jenkins_repo}} binary/' state=absent
+
+- name: Jenkins | Install | Install Jenkins
+  apt: pkg=jenkins update_cache=yes force=yes state=latest
+
+- name: Jenkins | Configure | Change JENKINS_USER
+  lineinfile: dest='/etc/default/jenkins' regexp='^JENKINS_USER=' line='JENKINS_USER={{jenkins_user}}' state=present
+
+- name: Jenkins | Configure | Change JENKINS_GROUP
+  lineinfile: dest='/etc/default/jenkins' regexp='^JENKINS_GROUP=' line='JENKINS_GROUP={{jenkins_group}}' state=present
+
+- name: Jenkins | Configure | Change permissions
+  file: path='/var/lib/jenkins' owner='{{jenkins_user}}' group='{{jenkins_group}}' recurse='yes'
+
+- name: Jenkins | Configure | Change permissions
+  file: path='/var/log/jenkins' owner='{{jenkins_user}}' group='{{jenkins_group}}' recurse='yes'
+
+- name: Jenkins | Configure | Change permissions
+  file: path='/var/cache/jenkins' owner='{{jenkins_user}}' group='{{jenkins_group}}' recurse='yes'
+
+- name: Jenkins | Configure | Create jenkins directory job
+  action: file path={{jenkins_home}}jobs/ owner=jenkins state=directory

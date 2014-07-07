@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+#
+# Tomcat accepts two parameters JAVA_OPTS and CATALINA_OPTS
+# JAVA_OPTS are used during START/STOP/RUN
+# CATALINA_OPTS are used during START/RUN
+
+JAVA_HOME="{{java_home}}latest"
+CATALINA_HOME={{tomcat_home}}
+
+export SSMPATH={{pictools_home}}
+export PATH=${PATH}:{{pictools_home}}
+
+JMX_OPTS="-Dcom.sun.management.jmxremote.password.file=${CATALINA_BASE}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${CATALINA_BASE}/conf/jmxremote.access -Dcom.sun.management.jmxremote.ssl=false"
+
+JVM_OPTS="{% if tomcat_hugetables=='true' %}-XX:+UseLargePages{% endif %} -server -Djava.security.egd=file:/dev/./urandom -Xms4096m -Xmx4096m -XX:PermSize=256m -XX:MaxPermSize=512m -XX:-UseSplitVerifier"
+
+{% if tomcat_native == 'true' %}
+export LD_LIBRARY_PATH=/usr/local/jni-wrapper/lib:{{pictools_home}}:{{xuggler_home}}/lib
+{% else %}
+export LD_LIBRARY_PATH={{pictools_home}}:{{xuggler_home}}/lib
+{% endif %}
+
+JAVA_OPTS="${JMX_OPTS} ${JVM_OPTS} {{pictools_java_opts}} -Djava.library.path=${LD_LIBRARY_PATH}"

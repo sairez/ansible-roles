@@ -1,0 +1,29 @@
+---
+
+- name: Apache | Install | Install apache2
+  apt: pkg='{{item}}' state='present'
+  with_items: apache_requirements
+  tags: install
+
+- name: Apache | Install | Enable mod_ssl, mod_proxy
+  shell: 'a2enmod {{item}}'
+  with_items: apache_modules
+
+- name: Apache | Install | Disable gzip compression
+  shell: 'a2dismod deflate'
+
+- name: Apache | Install | Overlay configuration
+  template: src='{{build_flavor}}/{{app_flavor}}/{{item.file}}' dest='{{item.target}}' owner='root' group='root' mode=0644
+  with_items: apache_config_files
+
+- name: Apache | Install | Enable configuration
+  file: src='{{apache_home}}/sites-available/web.conf' path='{{apache_home}}/sites-enabled/web.conf' state=link
+
+- name: Apache | Install | Remove default site
+  file: path='{{apache_home}}/sites-enabled/000-default' state=absent
+
+- name: Apache | Install | Add dir for ssl certs
+  file: path='{{apache_home}}/ssl' state=directory owner='root' group='root'
+
+- name: Apache | Install | Enable httpd to start on boot
+  service: name='{{apache_service}}' state='restarted' enabled='yes'

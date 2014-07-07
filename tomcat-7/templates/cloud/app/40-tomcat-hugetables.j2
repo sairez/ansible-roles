@@ -1,0 +1,4 @@
+{% if tomcat_hugetables=='true' %}
+vm.nr_hugepages={{tomcat_hugetables_number_hugepages}}
+vm.hugetlb_shm_group={{tgid.stdout}}
+{% endif %}

@@ -1,0 +1,9 @@
+---
+
+####################################
+## LIQUIBASE ##
+
+liquibase_ver: '3.1.1'
+liquibase_file: 'liquibase-{{liquibase_ver}}-bin.zip'
+liquibase_url: 'http://downloads.sourceforge.net/project/liquibase/Liquibase%20Core/{{liquibase_file}}'
+liquibase_home: '/opt/liquibase'

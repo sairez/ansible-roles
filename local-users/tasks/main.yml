@@ -1,0 +1,50 @@
+---
+
+- name: Local users | root Configure | Backup original configs
+  shell: 'cp -v {{item}} {{item}}.bu.{{ansible_date_time.date}}'
+  with_items: 
+    - '/etc/shadow'
+    - '/etc/ssh/sshd_config'
+
+- name: Local users | root Configure | Remove the random locked pw
+  lineinfile: dest='/etc/shadow' state='present' regexp='^root.*' line='root:!!:15421:0:99999:7:::'
+
+- name: Local users | root Configure | sshd specific
+  template: src='sshd_config.j2' dest='/etc/ssh/sshd_config' owner='root' group='root' mode='0600' 
+
+- name: Users | Configure | Install rc files to /etc/skel
+  copy: src='{{rc.base_dir}}/{{item.file}}' dest='/etc/skel/.{{item.target}}' owner='root' group='root' 
+  with_items: rc.files
+
+- name: Users | Configure | Make bin directory in /etc/skel
+  file: path='/etc/skel/{{item}}' state='directory' owner='root' group='root' mode='0755'
+  with_items:
+    - 'bin'
+    - 'tmp'
+
+- name: Users | Configure | Create home directory automatically
+  template: src='common-session.j2' dest='/etc/pam.d/common-session' owner='root' group='root' mode=0644
+
+- name: Local users | admin Configure | Create local sudoers group
+  group: name='{{sudoers_group}}' state=present
+
+- name: Local users | admin Configure | Create local admin users
+  user: name='{{item.name}}' password='{{item.password}}' groups='{{item.groups}}' shell='/bin/bash' comment='admin' createhome='yes' generate_ssh_key='yes' state='present'
+  with_items: admins
+
+- name: Local users | admin Configure | Home Configure | Set admin ~/ to world readable
+  file: path='/home/{{item.name}}' mode='0755' state='directory'
+  with_items: admins
+
+- name: Local users | root Configure | Install inputrc files to etc
+  copy: src='{{rc.base_dir}}inputrc' dest='/etc/inputrc' owner='root' group='root' 
+
+- name: Local users | root Configure | Install rc files to root user
+  copy: src='{{rc.base_dir}}{{item.file}}' dest='/root/.{{item.target}}' owner='root' group='root' 
+  with_items: rc.files
+
+- name: Local users | root Configure | create bin dir
+  file: path='/root/{{item}}' state='directory' owner='root' group='root' mode='0755'
+  with_items:
+    - 'bin'
+    - 'tmp'

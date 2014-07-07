@@ -1,0 +1,11 @@
+---
+
+- name: ansible | Configure | create ansible config dir 
+  file: path=/etc/ansible state=directory
+
+- name: ansible | Configure | add ansible hosts file for future ansible runs
+  template: src='hosts.j2' dest='/etc/ansible/hosts' owner='root' group='root' mode='0644'
+
+- name: ansible | Configure | add ansible config for future ansible runs
+  template: src='config.j2' dest='/home/{{item.name}}/.ansible.cfg' owner='{{item.name}}' group='{{item.name}}' mode='0644'
+  with_items: admins

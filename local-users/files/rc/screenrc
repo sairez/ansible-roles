@@ -1,0 +1,48 @@
+# {{ ansible_managed }}
+
+# .screenrc
+# Created: Sat Sep 17, 2005  07:57PM
+# Last modified: Wed Jun 23, 2010 11:41AM
+# Description: pretty basic screenrc
+
+caption always "%{bc}%C | %M %d | %H | %l %{+u wb} %L=%-Lw%45>%{bw}%n%f* %t%{-}%+Lw%-0<"
+#caption always "%{bc}%C | %M %d | %H%{+u wb} %L=%-Lw%45>%{bw}%n%f* %t%{-}%+Lw%-0<"
+activity "%c activity -> %n%f %t"
+bell "%c bell -> %n%f %t^G"
+vbell_msg " *beep* "
+silencewait 15
+startup_message off
+deflogin on
+autodetach on
+shell bash
+vbell off
+zombie cr
+verbose on
+#escape ^zz
+defscrollback 5000
+#defutf8 on
+nonblock on
+term xterm
+# Window numbering starts at 1, not 0.
+bind c screen 1
+bind 0 select 10
+bind '^k'
+bind 'K' kill
+bind 'L'
+bind 'I' login on
+bind 'O' login off
+bind = resize =
+bind _ resize max
+bind + resize +1
+bind - resize -1
+
+#bindkey -k F2 next
+#bindkey -k F1 prev
+
+screen 1
+screen 2
+screen 3
+#screen -t l-sentinel 1
+screen -t top 8 sudo top
+screen -t root 9 sudo su -
+select 1

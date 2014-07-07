@@ -1,0 +1,10 @@
+---
+
+- name: Edit /etc/hosts file
+  lineinfile: regexp='^127.0.0.1' line='127.0.0.1 {{hostname}} {{hostname}}.{{domain}}' state=present dest='/etc/hosts'
+
+- name: Edit /etc/hostname
+  copy: content='{{hostname}}' dest='/etc/hostname' force='yes'
+
+- name: Set hostname
+  shell: 'hostname {{hostname}}'

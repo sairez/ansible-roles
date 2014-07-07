@@ -1,0 +1,32 @@
+---
+
+- name: Opsview Agent | Install | Install prereqs
+  apt: pkg='{{item}}' state='latest'
+  with_items:
+    - 'libmcrypt4'
+    - 'libgetopt-mixed-perl'
+
+- name: Opsview Agent | Install | Create nagios user
+  user: name='{{opsview_user.name}}' state='present'
+
+- name: Opsview Agent | Install | Grab latest opsview agent pkg
+  get_url: url='{{opsview_base_url}}{{opsview_installer}}' dest='/tmp/{{opsview_installer}}' mode=0755
+
+- name: Opsview Agent | Install | Install latest opsview agent pkg
+  shell: 'dpkg -i /tmp/{{opsview_installer}}'
+
+- name: Opsview Agent | Install | Grab opsview custom scripts
+  copy: src='{{item}}' dest='{{opsview_home}}libexec/{{item}}' mode=0755 owner='{{opsview_user.name}}' group='{{opsview_user.group}}'
+  with_items: opsview_scripts
+
+- name: Opsview Agent | Install | Create override directory
+  file: path='{{opsview_home}}etc/nrpe_local' state='directory' mode=0755 owner='{{opsview_user.name}}' group='{{opsview_user.group}}'
+
+- name: Opsview Agent | Install | Overlay configuration
+  template: src='web.j2' dest='{{opsview_home}}etc/nrpe_local/web.cfg' owner='{{opsview_user.name}}' group='{{opsview_user.group}}'
+
+- name: Opsview Agent | Install | Give nagios permissions on /var/log/messages
+  file: path='/var/log/messages' mode='0644' state='file'
+
+- name: Opsview Agent | Install | Startup service and enable on boot
+  service: name='opsview-agent' state='restarted' enabled='yes'

@@ -1,0 +1,49 @@
+---
+
+- name: Splunk | Install | Grab latest splunk tarballs and installers
+  get_url: url='{{splunk_base_url}}{{splunk_installer.file}}' dest='/tmp/{{splunk_installer.file}}'
+  when: local_installer_location = ''
+
+- name: Splunk | Install | Grab latest splunk tarballs and installers
+  copy: src='{{local_installer_location}}/{{splunk_installer.file}}' dest='/tmp/{{splunk_installer.file}}'
+  when: local_installer_location != ''
+
+- name: Splunk | Install | Grab latest splunk tarballs and installers
+  copy: src='{{local_installer_location}}/{{splunk_nix_collector.file}}' dest='/tmp/{{splunk_nix_collector.file}}'
+  when: local_installer_location != ''
+
+- name: Splunk | Install | Install splunk universal forwarder
+  shell: dpkg -i /tmp/{{splunk_installer.file}}
+
+- name: Splunk | Install | Install Centrify *NIX collector
+  shell: 'tar -xvzf /tmp/{{splunk_nix_collector.file}} -C {{splunk_home}}/etc/apps/ creates={{splunk_home}}/etc/apps/{{splunk_nix_collector.target}}'
+
+- name: Splunk | Install | Fix permissions on Centrify *NIX collector
+  file: path={{splunk_home}}/etc/apps/{{splunk_nix_collector.target}} owner={{splunk_user.name}} group={{splunk_user.group}}
+
+- name: Splunk | Install | Start and accept license
+  shell: 'echo y | {{splunk_home}}/bin/splunk start --accept-license --answer-yes'
+
+- name: Splunk | Install | Start enable boot start
+  shell: '{{splunk_home}}/bin/splunk enable boot-start'
+
+- name: Splunk | Install | Start fix permissions on init.d script
+  shell: 'chmod +x /etc/init.d/splunk'
+
+- name: Splunk | Install | Enable splunk start at default runlevels
+  shell: 'update-rc.d splunk defaults'
+
+- name: Splunk | Install | Place password file to enable admin password
+  template: src='splunk.secret' dest='{{splunk_home}}/etc/auth'
+
+- name: Splunk | Install | Add forward-server
+  template: src='outputs.j2' dest='{{splunk_home}}/etc/system/local/outputs.conf'
+
+- name: Splunk | Install | Add monitor inputs.conf
+  template: src='inputs.j2' dest='{{splunk_home}}/etc/system/local/inputs.conf'
+
+- name: Splunk | Configure | Fix ssl encryption problem
+  lineinfile: dest='{{splunk_home}}/etc/system/local/server.conf' regexp='^sslKeysfilePassword =' line='sslKeysfilePassword = password' state='present'
+
+- name: Splunk | Install | Restart splunk for inputs change
+  service: name='splunk' state='restarted' enabled='yes'

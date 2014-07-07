@@ -1,0 +1,86 @@
+" {{ ansible_managed }}
+
+" .vimrc
+" Created: Sat Sep 17, 2005  08:02PM
+" Last modified: Fri Jul 29, 2011 01:58PM
+" Description: a work in progress
+
+syntax on
+
+colorscheme desert
+
+set nocompatible
+set directory=~/tmp         " temp file directory for vim
+set history=50              " none mapped commands to remember.  default is 20 
+set hlsearch                " highlight search terms.  temp disable with :nohlsearch
+set incsearch               " match as search pattern is typed
+set ignorecase              " ignore case in patterns
+set gdefault                " set all substitutes to g by default
+set nowrap                  " don't wrap text
+" set paste                   " paste mode by default -- not a good idea as it screws up ab and smart ident, etc
+set expandtab               " expands tabs to space, ctrl-v <tab> to get a real tab
+set shiftwidth=4            " how much to ident on >>, cident, etc
+set tabstop=4               " tab = n spaces
+set formatoptions+=roc      " r = comment leader after enter, o = comment leader after o, autowrap comments
+set showcmd                 " show command feedback in last line
+set showmatch               " show matching brackets on cursor over
+set showmode                " show mode in last line, eg. insert, visual, etc
+set undolevels=50           " max # of undos
+" set title to be filename, status, path
+set title titlestring=%F%(\ %M%)
+set laststatus=2            " status bar always shows last two lines
+" status line: filename, format, filetype, position_in_file, length_of_file, %_of_file, ascii_code, hex_code 
+set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%04l,%04v]\ [LEN=%L]\ [%p%%]\ [ASCII=\%03.3b]\ [HEX=\%02.2B]\ 
+
+" basic file header
+ab pfh #!/bin/sh<CR># <C-R>%<CR>Created: <ESC>"=strftime("%a %b %d, %Y %I:%M%p")<CR>p<ESC>oLast modified: <CR>Description:
+ab wfh #!/bin/sh<CR># <C-R>%<CR>Created: <ESC>"=strftime("%a %b %d, %Y %I:%M%p")<CR>p<ESC>oLast modified: <CR>Description:
+
+" comment out line/selection
+noremap <silent> ,c :<C-B>sil <C-E>s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:noh<CR> 
+" uncomment line/selection
+noremap <silent> ,u :<C-B>sil <C-E>s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:noh<CR> 
+" comment out xml block
+vmap ,c <esc>a--><esc>'<i<!--<esc>'>$
+
+" help
+nnoremap <F1> :help<Space>
+vmap <F1> <C-C><F1>
+omap <F1> <C-C><F1>
+map! <F1> <C-C><F1>
+
+" toggle linewrapping
+map <F5> :set wrap!<CR>
+" don't bork idents on paste
+set pastetoggle=<F6>
+" for when you forget to sudo vi
+map <F10> :w !sudo tee %<CR>
+
+filetype plugin indent on
+filetype on
+augroup filetype
+  au BufNewFile,BufRead *.txt,README*,mutt*[0-9] set filetype=human
+augroup END
+
+au FileType human 				set noautoindent nosmartindent formatoptions-=r textwidth=72
+au FileType sh,make,perl,python	let b:comment_leader = '# ' 
+au FileType vim 				let b:comment_leader = '" ' 
+
+" track last modified date on perl, config files, and shell scripts
+au BufWrite *.pl ks|call LastMod()|'s
+au BufWrite *rc ks|call LastMod()|'s
+au BufWrite *.sh ks|call LastMod()|'s
+
+" FUNCTIONS
+
+" Search the first 20 lines for Last modified: and update the current datetime. 
+function! LastMod() 
+    if line("$") > 20 
+let l = 20 
+    else 
+let l = line("$") 
+    endif 
+    exe "1," . l . "g/Last modified: /s/Last modified: .*/Last modified: " . 
+\ strftime("%a %b %d, %Y %I:%M%p") 
+endfun
+

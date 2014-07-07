@@ -1,0 +1,13 @@
+---
+
+####################################
+## GIT ##
+
+git:
+  github:
+    user_name: 'Github USER'
+    email: 'blah@github.com'
+  git_crypt:
+    base_url: 'https://github.com/'
+    files:
+      - {sub_url: 'AGWA/', file: 'git-crypt', target: 'git-crypt'}

@@ -1,0 +1,9 @@
+---
+
+####################################
+## JAMON ##
+
+jamon_base_url: 'http://blah.com/releases/jamon/'
+jamon_installer:
+  file: 'jamonall-2.74.zip'
+  target: ['jamonall-2.74','jamon-2.74.jar']

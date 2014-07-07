@@ -1,0 +1,25 @@
+---
+
+- name: VMware Tools | Install | Grab VMware Tools iso
+  get_url: url='{{vmware_tools_base_url}}{{vmware_tools_installer.file}}' dest='/tmp/{{vmware_tools_installer.file}}'
+
+- name: VMware Tools | Install | Create mount point 
+  file: path={{vmware_tools_mount_point}} state=directory
+
+- name: VMware Tools | Install | Mount VMware Tools iso
+  shell: mount -o ro,loop -t iso9660 /tmp/{{vmware_tools_installer.file}} {{vmware_tools_mount_point}}
+
+- name: VMware Tools | Install | Grab VMware Tools tarball from mount
+  shell: tar -xvzf {{vmware_tools_mount_point}}/{{vmware_tools_installer.target.0}} -C /tmp creates='/tmp/{{vmware_tools_installer.target.1}}'
+
+- name: VMware Tools | Install | Run Installer with defaults
+  shell: /tmp/{{vmware_tools_installer.target.1}}/vmware-install.pl -d
+
+- name: VMware Tools | Install | Cleanup old mount point
+  shell: umount {{vmware_tools_mount_point}}
+
+- name: VMware Tools | Install | Clean installers
+  file: path='/tmp/{{vmware_tools_installer.file}}' state='absent'
+
+- name: VMware Tools | Install | Cleanup installer target
+  file: path='/tmp/{{vmware_tools_installer.target.1}}' state='absent'

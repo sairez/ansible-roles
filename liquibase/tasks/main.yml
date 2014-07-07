@@ -1,0 +1,18 @@
+---
+
+- name: Liquibase | Download liquibase jar
+  get_url: url={{liquibase_url}} dest='/tmp/{{liquibase_file}}' mode=0755
+  when: remote_deploy is not defined or remote_deploy != 'true'
+
+- name: Liquibase | Ensure install directory exists
+  copy: src='{{liquibase_file}}' dest='/tmp/{{liquibase_file}}' mode=0755
+  when: remote_deploy is defined and remote_deploy == 'true'
+
+- name: Liquibase | Ensure install directory exists
+  file: path={{liquibase_home}} owner={{postgres_user.name}} group={{postgres_user.group}} mode=0755 state=directory recurse=true
+
+- name: Liquibase | Unarchive and give permissions
+  shell: unzip -o /tmp/{{liquibase_file}} -d /opt/liquibase
+
+- name: Liquibase | Set Permissions
+  file: path=/tmp/{{liquibase_file}} owner={{postgres_user.name}} group={{postgres_user.group}} mode=0755 state=file

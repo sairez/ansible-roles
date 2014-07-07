@@ -1,0 +1,91 @@
+---
+
+- name: system | Get OS release
+  shell: uname -r
+  register: os_release
+
+- name: cleanup | Clean up unecessary files
+  file: path={{item}} state=absent
+  with_items:
+    - '/dev/.udev'
+    - '/lib/udev/rules.d/75-persistent-net-generator.rules'
+    
+- name: cleanup | Stop exim4 service
+  service: name='exim4' state='stopped' enabled='no'
+  ignore_errors: yes
+
+- name: cleanup | Remove packages no longer needed
+  apt: pkg={{item}} force='yes' state='absent' purge='yes'
+  ignore_errors: yes
+  with_items:
+    - linux-headers-{{os_release.stdout_lines.0}}
+    - g++
+    - g++-4.7
+    - gcc
+    - gcc-4.6 
+    - gcc-4.6-base 
+    - gcc-4.7 
+    - cpp
+    - cpp-4.7
+    - make
+    - exim*
+    - sendmail
+    - doc-debian
+    - doc-linux-text
+    - mtools
+    - ppp
+    - rcs
+    - whiptail
+    - gnu-efi
+    - sharutils
+    - slang1
+    - build-essential 
+    - checkinstall 
+    - dpkg-dev 
+    - fakeroot 
+    - libalgorithm-diff-perl 
+    - libalgorithm-diff-xs-perl 
+    - libalgorithm-merge-perl 
+    - libc-dev-bin 
+    - libc6-dev 
+    - libdpkg-perl 
+    - libfile-fcntllock-perl 
+    - libgmp10 
+    - libitm1 
+    - libmpc2 
+    - libmpfr4 
+    - libquadmath0 
+    - libssl-doc 
+    - libstdc++6-4.7-dev 
+    - libtimedate-perl 
+    - linux-libc-dev 
+    - manpages-dev 
+    - python2.7-dev
+    
+- name: cleanup | Remove users and groups not needed
+  user: name={{item}} state='absent'
+  ignore_errors: yes
+  with_items:
+  - irc
+  - uucp
+  - news
+  - games
+  - list
+  - Debian-exim
+
+- name: cleanup | Remove users and groups not needed
+  group: name={{item}} state='absent'
+  ignore_errors: yes
+  with_items:
+  - audio
+  - video
+  - news
+
+- name: cleanup | Remove uneeded local games directory
+  file: path=/usr/local/games state='absent'
+
+- name: cleanup | Apt Cleanup
+  shell: apt-get -y {{item}}
+  with_items:
+    - autoremove
+    - clean

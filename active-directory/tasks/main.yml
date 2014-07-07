@@ -1,0 +1,12 @@
+---
+
+- name: AD Authentication| Install | Install dependencies for AD authentication
+  apt: pkg={{item}} state=installed force=yes
+  with_items:
+    - krb5-user 
+    - libpam-krb5
+    - winbind
+    - samba
+
+- name: AD Authentication | Configure | Allow for authentication using winbind
+  template: src='nsswitch.j2' dest='/etc/nsswitch.conf'

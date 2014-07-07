@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# init script for Mirth Connect Server
+#
+# chkconfig: 345 92 9
+# description: Starts and stops the Mirth Connect daemon.
+# processname: mirthconnect
+# pidfile: /var/run/mirthconnect.pid
+
+pushd {{mirthconnect_home}}
+./mcservice $1
+popd
+exit 0

@@ -1,0 +1,46 @@
+---
+
+tomcat_home: '/usr/local/tomcat'
+tomcat_service: 'tomcat'
+tomcat_user: {name: 'tomcat', group: 'tomcat'}
+
+tomcat_config_files:
+  - {file: 'tomcat.j2', target: '/etc/init.d/tomcat'}
+  - {file: 'setenv.j2', target: '{{tomcat_home}}/bin/setenv.sh'}
+  - {file: 'server.j2', target: '{{tomcat_home}}/conf/server.xml'}
+  - {file: 'limits.j2', target: '/etc/security/limits.conf'}
+  - {file: 'default-tomcat.j2', target: '/etc/default/tomcat'}
+
+tomcat_ajp_port: '8009'
+tomcat_ajps_port: '8443'
+tomcat_http_port: '8080'
+tomcat_https_port: '8443'
+tomcat_shutdown_port: '-1'
+
+tomcat_base_url: 'http://blah.com/releases/apache/'
+
+tomcat_native: 'false'
+tomcat_native_installer:
+  file: 'jni-wrapper.tar.gz'
+  target: 'jni-wrapper'
+
+tomcat_default_webapps: ['ROOT','docs','examples','host-manager','manager']
+
+tomcat_jmx: 'true'
+tomcat_jmx_rmi_reg_port: '10001'
+tomcat_jmx_rmi_server_port: '10002'
+tomcat_jmx_username: 'admin'
+tomcat_jmx_password: 'MahBucket1!'
+tomcat_jmx_jar:
+  file: 'catalina-jmx-remote.jar'
+  target: 'catalina-jmx-remote.jar'
+
+tomcat_max_parameter_count: '480010'
+tomcat_max_post_size: '10485760'
+tomcat_max_open_files: '102400'
+
+tomcat_hugetables: 'false'
+tomcat_hugetables_group: 'hugetbl'
+tomcat_hugetables_number_hugepages: '2560'
+tomcat_hugetables_soft_memlock: '5242880'
+tomcat_hugetables_hard_memlock: '5242880'

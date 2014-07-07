@@ -1,0 +1,7 @@
+---
+
+app_dynamics_base_url: 'http://blah.com/releases/misc/'
+
+app_dynamics_installers:
+    - {file: 'AppServerAgent.zip', target: 'AppServerAgent'}
+    - {file: 'MachineAgent.zip', target: 'MachineAgent'}

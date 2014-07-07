@@ -1,0 +1,21 @@
+---
+
+- name: Java Tools | Cleanup installers
+  file: path='/tmp/{{xuggler_installer.file}}' state='absent'
+  tags: clean
+
+- name: Java Tools | Cleanup installer targets
+  file: path='/tmp/{{xuggler_installer.target}}' state='absent'
+  tags: clean
+
+- name: Xuggler | Install | Grab latest xuggler tarball
+  get_url: url='{{xuggler_base_url}}{{xuggler_installer.file}}' dest='/tmp/{{xuggler_installer.file}}' mode=0755
+
+- name: Xuggler | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{xuggler_installer.file}} -C /usr/local creates=/usr/local/{{xuggler_installer.target}}'
+
+- name: Xuggler | Install | Symlink install directory
+  file: src='/usr/local/{{xuggler_installer.target}}' path='{{xuggler_home}}' state='link'
+
+- name: Xuggler | Install | Cleanup installers
+  file: path='/tmp/{{xuggler_installer.file}}' state='absent'

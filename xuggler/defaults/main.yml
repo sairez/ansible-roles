@@ -1,0 +1,5 @@
+---
+
+xuggler_home: /usr/local/xuggler
+xuggler_base_url: 'http://blah.com/releases/xuggler/'
+xuggler_installer: {file: 'xuggler.5.5.tar.gz', target: 'xuggle-xuggler-5.5'}

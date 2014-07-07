@@ -1,0 +1,21 @@
+---
+
+####################################
+## MIRTH CONNECT ##
+
+mirthconnect_home: /usr/local/mirthconnect
+mirthconnect_base_url: 'http://blah.com/releases/misc/'
+mirthconnect_config_files:
+  - {file: 'dbdrivers.xml', target: '{{mirthconnect_home}}/conf/dbdrivers.xml'}
+  - {file: 'log4j.properties', target: '{{mirthconnect_home}}/conf/log4j.properties'}
+  - {file: 'mirth-cli-config.properties.j2', target: '{{mirthconnect_home}}/conf/mirth-cli-config.properties'}
+  - {file: 'mirth.properties.j2', target: '{{mirthconnect_home}}/conf/mirth.properties'}
+  - {file: 'mirthconnect.j2', target: '/etc/init.d/mirthconnect'}
+mirthconnect_database: 'mirthdb'
+mirthconnect_http_port: '9090'
+mirthconnect_https_port: '9443'
+mirthconnect_user:
+  name: 'admin'
+  password: 'admin'
+
+postgres_port: '5432'

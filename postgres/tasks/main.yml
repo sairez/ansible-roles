@@ -1,0 +1,57 @@
+---
+
+- name: PostgreSQL | Install | Install postgres with locale fix
+  shell: LANG={{item}} LC_COLLATE={{item}} LC_CTYPE={{item}} LC_MESSAGES={{item}} LC_MONETARY={{item}} LC_NUMERIC={{item}} LC_TIME={{item}} LC_ALL={{item}} apt-get install -y postgresql
+  with_items:
+    - 'en_US.UTF-8'
+
+- name: PostgreSQL | Install | Install core postgres requirements
+  apt: name='{{ item }}' state='present'
+  with_items:
+   - 'postgresql-contrib-9.1'
+   - 'uuid'
+   - 'python-psycopg2'
+
+- name: PostgreSQL | Install | Backup postgres config files
+  shell: 'cp -v {{postgres_config_path}}{{item.target}} {{postgres_config_path}}{{item.target}}.bu.{{ansible_date_time.date}}'
+  with_items: postgres_config_files
+
+- name: PostgreSQL | Install | Overlay configuration
+  template: src='{{build_flavor}}/{{app_flavor}}/{{item.file}}' dest='{{postgres_config_path}}{{item.target}}' owner='{{postgres_user.name}}' group='{{postgres_user.name}}' mode='0600'
+  with_items: postgres_config_files
+
+- name: PostgreSQL | Install | Set kernel memory requirements
+  template: src='{{build_flavor}}/{{app_flavor}}/30-postgresql-shm.j2' dest='/etc/sysctl.d/30-postgresql-shm.conf' owner='root' group='root' mode='0644'
+
+- name: PostgreSQL | Install | Link postgres configs to postgres_home
+  file: src={{postgres_config_path}}{{item.target}} path={{postgres_home}}{{item.target}} state=link
+  with_items: postgres_config_files
+
+- name: PostgreSQL | Install | Enable postgres to start on boot
+  service: name='{{postgres_service}}' state='started' enabled='yes'
+
+- name: PostgreSQL | Install | Wait for postgres to start
+  wait_for: port='{{postgres_port}}' state='started' delay='10'
+
+- name: PostgreSQL | Install | Set postgres user password
+  shell: sudo -u {{postgres_user.name}} psql -U {{postgres_user.name}} -d {{postgres_user.name}} -c "alter user {{postgres_user.name}} with password '{{postgres_user.password}}';"
+
+- name: PostgreSQL | Edit .pgpass file
+  copy: content='localhost:{{postgres_port}}:{{postgres_db}}:{{postgres_user.name}}:{{postgres_user.password}}' dest='/home/{{item.name}}/.pgpass' owner='{{item.name}}' group='{{item.name}}' mode='0600'
+  when: 'item.cron == true'
+  with_items: admins
+
+- name: PostgreSQL | Edit root .pgpass file
+  copy: content='localhost:{{postgres_port}}:*:{{postgres_user.name}}:{{postgres_user.password}}' dest='/root/.pgpass' owner='root' group='root' mode='0600'
+
+- name: PostgreSQL | Vacuum Cron | Create vacuum cron script
+  template: src='{{build_flavor}}/{{app_flavor}}/vacuum-db.j2' dest='/home/{{item.name}}/bin/vacuum-db.sh' owner='{{item.name}}' group='{{item.name}}' mode='0755'
+  when: 'item.cron == true'
+  with_items: admins
+  tags: 'cron'
+
+- name: PostgreSQL | Vacuum Cron | Add vacuum cron job
+  cron: name='vaccum db' user='{{item.name}}' state='present' minute='15' hour='03' job='/home/{{item.name}}/bin/vacuum-db.sh &> /dev/null'
+  when: 'item.cron == true'
+  with_items: admins
+  tags: 'cron'

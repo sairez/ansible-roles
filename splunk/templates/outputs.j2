@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+#
+[tcpout]
+defaultGroup = default-autolb-group
+
+[tcpout:default-autolb-group]
+server = {{splunk_server}}:{{splunk_port}}
+
+[tcpout-server://{{splunk_server}}:{{splunk_port}}]

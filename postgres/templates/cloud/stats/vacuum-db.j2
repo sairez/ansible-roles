@@ -1,0 +1,4 @@
+#! /bin/sh
+# {{ ansible_managed }}
+#
+vacuumdb -h localhost -p {{postgres_port}} -U {{postgres_user}} -v -z -d {{postgres_db}}

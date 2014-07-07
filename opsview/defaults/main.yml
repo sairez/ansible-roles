@@ -1,0 +1,11 @@
+---
+
+opsview_home: '/usr/local/nagios/'
+opsview_user: {name: 'nagios', group: 'nagios'}
+opsview_base_url: 'https://downloads.opsview.com/opsview-core/latest/apt/pool/main/o/opsview-base/'
+opsview_installer: 'opsview-agent_4.5.1.439-1wheezy1_amd64.deb'
+opsview_scripts:
+  - 'check_ad_logins.sh'
+  - 'check_failed_logins.py'
+  - 'check_open_files.pl'
+opsview_port: '5666'

@@ -1,0 +1,25 @@
+---
+
+postgres_port: '5432'
+postgres_service: 'postgresql'
+postgres_home: '/var/lib/postgresql/9.1/main/'
+postgres_config_path: '/etc/postgresql/9.1/main/'
+postgres_config_files:
+  - {sub_dir: '', file: 'pg_hba.j2', target: 'pg_hba.conf'}
+  - {sub_dir: '', file: 'postgresql.j2', target: 'postgresql.conf'}  
+postgres_auth_method: 'password'
+
+postgres_settings:
+  max_connections: '400'
+  shared_buffers: '512MB'
+  max_prepared_transactions: '400'
+  effective_cache_size: '1024MB'
+  log_destination: 'stderr'
+  logging_collector: 'on'
+  log_directory: 'pg_log'
+  log_filename: 'postgresql-%a.log'
+  log_truncate_on_rotation: 'on'
+  log_rotation_age: '1d'
+  log_rotation_size: '0'
+  log_min_duration_statement: '2000'
+  log_line_prefix: '%m -'

@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+
+ulimit -Hn {{tomcat_max_open_files}}
+ulimit -Sn {{tomcat_max_open_files}}

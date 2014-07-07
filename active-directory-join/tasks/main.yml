@@ -1,0 +1,58 @@
+---
+
+- name: AD Authentication | Configure | Place kerberos config for domain authentication
+  template: src='krb5.j2' dest='/etc/krb5.conf'
+
+- name: AD Authentication | Configure | Place samba config for domain authentication
+  template: src='smb.j2' dest='/etc/samba/smb.conf'
+
+- name: AD Authentication | Configure | Start services and enable on boot (Debian)
+  service: name={{item}} state='restarted' enabled='yes'
+  with_items:
+    - winbind
+  when: 'ansible_os_family == "Debian"'
+
+- name: AD Authentication | Configure | Start services and do not enable on boot (Debian)
+  service: name={{item}} state='restarted' enabled='no'
+  with_items:
+    - samba
+  when: 'ansible_os_family == "Debian"'
+
+- name: AD Authentication | Configure | Start services and enable on boot (RedHat)
+  service: name={{item}} state='restarted' enabled='yes'
+  with_items:
+    - winbind
+  when: 'ansible_os_family == "RedHat"'
+
+- name: AD Authentication | Configure | kinit
+  shell: echo "{{ad_domain_admin_password}}" | kinit {{ad_domain_admin_username}}@{% filter upper %}{{ad_domain}}{% endfilter %}
+  when: lifecycle not in ['dev','test']
+
+- name: AD Authentication | Configure | Join Active Directory
+  shell: net ads join -U{{ad_domain_admin_username}}%'{{ad_domain_admin_password}}'
+  when: lifecycle not in ['dev','test']
+
+- name: AD Authentication | Configure | Enable pam authentication via winbind (RedHat)
+  shell: authconfig --update --enablewinbindauth --enablemkhomedir
+  when: 'ansible_os_family == "RedHat"'
+
+- name: AD Authentication | Configure | Enable pam authentication via winbind (Debian)
+  template: src='{{item.name}}' dest='/etc/pam.d/{{item.target}}'
+  with_items:
+    - {name: 'common-session-interactive.j2', target: 'common-session-interactive'}
+    - {name: 'common-password.j2', target: 'common-password'}
+    - {name: 'common-account.j2', target: 'common-account'}
+    - {name: 'common-auth.j2', target: 'common-auth'}
+    - {name: 'sudo.j2', target: 'sudo'}
+
+- name: AD Authentication | Configure | Set domain controllers to be ntp servers
+  lineinfile: regexp='^server {{item}}' insertafter='^#server ntp.your-provider.example' line='server {{item}}' state=present dest='/etc/ntp.conf'
+  with_items:
+    - "{{ad_primary_dc}}"
+    - "{{ad_secondary_dc}}"
+
+- name: AD Authentication | Configure | Start services and enable on boot
+  service: name={{item}} state='restarted'
+  with_items:
+    - winbind
+    - samba

@@ -1,0 +1,38 @@
+---
+
+- name: Mirth Connect | Install | Cleanup installers
+  file: path='/tmp/{{mirthconnect_installer.file}}' state='absent'
+
+- name: Mirth Connect | Install | Cleanup old install
+  file: path='/usr/local/{{mirthconnect_installer.target.0}}' state='absent'
+
+- name: Mirth Connect | Install | Cleanup old install
+  file: path='/usr/local/{{mirthconnect_installer.target.1}}' state='absent'
+
+- name: Mirth Connect | Install | Grab latest mirthconnect tarball
+  get_url: url='{{mirthconnect_base_url}}{{mirthconnect_installer.file}}' dest='/tmp/{{mirthconnect_installer.file}}' owner='root' group='root'
+
+- name: Mirth Connect | Install | Cleanup old installers
+  file: path='/usr/local/{{mirthconnect_installer.target.0}}' state='absent'
+
+- name: Mirth Connect | Install | Extract archive
+  shell: 'tar -xvzf /tmp/{{mirthconnect_installer.file}} -C /usr/local creates=/usr/local/{{mirthconnect_installer.target.0}}'
+
+- name: Mirth Connect | Install | Move target directory
+  shell: 'mv /usr/local/{{mirthconnect_installer.target.0}} /usr/local/{{mirthconnect_installer.target.1}}'
+
+- name: Mirth Connect | Install | Symlink install directory
+  file: src='/usr/local/{{mirthconnect_installer.target.1}}' path='{{mirthconnect_home}}' state='link'
+
+- name: Mirth Connect | Configure | Overlay configuration
+  template: src='{{build_flavor}}/{{app_flavor}}/{{item.file}}' dest='{{item.target}}'
+  with_items: mirthconnect_config_files
+
+- name: Mirth Connect | Configure | Make startup script executable
+  file: path='/etc/init.d/mirthconnect' state='file' owner='root' group='root' mode='0755'
+
+- name: Mirth Connect | Configure | Destroy database
+  shell: sudo -u {{postgres_user.name}} psql -U {{postgres_user.name}} -d {{postgres_user.name}} -c "DROP DATABASE IF EXISTS {{mirthconnect_database}};"
+
+- name: Mirth Connect | Configure | Create database
+  shell: sudo -u {{postgres_user.name}} psql -U {{postgres_user.name}} -d {{postgres_user.name}} -c "CREATE DATABASE {{mirthconnect_database}};"
