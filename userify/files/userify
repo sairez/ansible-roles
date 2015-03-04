@@ -1,0 +1,32 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: userify
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Userify
+# Description: This file starts and stops Userify shim
+# 
+### END INIT INFO
+
+USERIFY_DIR=/opt/userify
+
+case "$1" in
+ start)
+  ${USERIFY_DIR}/shim.sh &
+   ;;
+ stop)
+   killall shim.py shim.sh 2>/dev/null
+   sleep 5
+   ;;
+ restart)
+   killall shim.py shim.sh 2>/dev/null
+   sleep 10
+   ${USERIFY_DIR}/shim.sh &
+   ;;
+ *)
+   echo "Usage: userify {start|stop|restart}" >&2
+   exit 3
+   ;;
+esac
