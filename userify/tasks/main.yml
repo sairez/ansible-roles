@@ -1,19 +1,28 @@
 ---
+# userify/tasks/main.yml
 
-    - name: get userify shim
-      get_url: url=https://shim.userify.com/installer.sh dest=/tmp mode=0777
+- name: get userify shim
+  get_url:
+    url: https://shim.userify.com/installer.sh
+    dest: /tmp
+    mode: 0777
+  notify: start_userify
 
-    - name: install userify
-      shell: ./installer.sh chdir=/tmp creates=/opt/userify
-      environment: 
-        api_id: "{{userify_api_id}}"
-        api_key: "{{userify_api_key}}"
-      sudo: yes
+- name: install userify
+  shell: './installer.sh'
+  args:
+    chdir: /tmp
+    creates: /opt/userify
+  environment:
+    api_id: "{{userify_api_id}}"
+    api_key: "{{userify_api_key}}"
+  notify: start_userify
 
-    - name: wrap shim in init script
-      copy: src=files/userify dest=/etc/init.d/userify owner=root group=root mode=0755
-      sudo: yes
-
-    - name: start userify service
-      service: name=userify state=restarted enabled=yes
-      sudo: yes
+- name: wrap shim in init script
+  copy:
+    src: files/userify
+    dest: /etc/init.d/userify
+    owner: root
+    group: root
+    mode: 0755
+  notify: start_userify
