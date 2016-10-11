@@ -1,0 +1,21 @@
+---
+
+# this is a userify.yml example file, for running the main userify playbooks.
+
+- hosts: all
+  # ansible has changed sudo to become: yes
+  become: yes
+
+  vars:
+    # these you can find by selecting the server group, then review
+    # credentials. the api_id and api_key are listed there.
+    userify_api_id:
+    userify_api_key:
+
+  tasks:
+    # tasks can be include statements, in this manner. One main benefit
+    # is that you don't have to follow the "main.yml" naming convention for
+    # this. You can change it to userify.yml, or if you have subsequent
+    # playbooks for, say, required installers or what not, you can use them
+    # there.
+    - include: tasks/main.yml

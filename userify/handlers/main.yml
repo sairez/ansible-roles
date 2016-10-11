@@ -1,0 +1,8 @@
+---
+
+# userify/handlers/main.yml
+
+- name: start_userify
+  service:
+    name: userify
+    state: started
